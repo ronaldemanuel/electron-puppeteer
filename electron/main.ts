@@ -1,8 +1,10 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
-
+import { app, BrowserWindow, ipcMain } from 'electron';
+import run from '../src/com/services/puppeteer';
+import pie from 'puppeteer-in-electron';
+import puppeteer from 'puppeteer-core';
 let mainWindow: BrowserWindow | null
 
-declare const MAIN_WINDOW_WEBPACK_ENTRY: string
+// declare const MAIN_WINDOW_WEBPACK_ENTRY: string
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string
 
 // const assetsPath =
@@ -10,7 +12,13 @@ declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string
 //     ? process.resourcesPath
 //     : app.getAppPath()
 
-function createWindow () {
+async function createWindow () {
+  await pie.initialize(app);
+
+  const browser = await pie.connect(app, puppeteer as any);
+
+  const url = 'https://www.youtube.com';
+  
   mainWindow = new BrowserWindow({
     // icon: path.join(assetsPath, 'assets', 'icon.png'),
     width: 1100,
@@ -23,11 +31,16 @@ function createWindow () {
     }
   })
 
-  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY)
+  mainWindow.loadURL(url)
 
+  
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+  const page = await pie.getPage(browser, mainWindow);
+
+  console.log(page.url());
+  
 }
 
 async function registerListeners () {
@@ -36,6 +49,10 @@ async function registerListeners () {
    */
   ipcMain.on('message', (_, message) => {
     console.log(message)
+  })
+
+  ipcMain.on('run', () => {
+    run();
   })
 }
 
