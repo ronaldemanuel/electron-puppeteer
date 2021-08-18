@@ -1,10 +1,13 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
-import run from '../src/com/services/puppeteer';
-import pie from 'puppeteer-in-electron';
-import puppeteer from 'puppeteer-core';
-let mainWindow: BrowserWindow | null
+import { app, BrowserView, BrowserWindow, ipcMain } from 'electron';
+import pie from "puppeteer-in-electron";
+import puppeteer from "puppeteer-core";
+import { Browser, Page } from 'puppeteer-in-electron/node_modules/@types/puppeteer';
 
-// declare const MAIN_WINDOW_WEBPACK_ENTRY: string
+let mainWindow: BrowserWindow | null
+let page: Page
+let browser: Browser
+
+declare const MAIN_WINDOW_WEBPACK_ENTRY: string
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string
 
 // const assetsPath =
@@ -12,13 +15,14 @@ declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string
 //     ? process.resourcesPath
 //     : app.getAppPath()
 
-async function createWindow () {
+const initializePuppeteer = async () => {
   await pie.initialize(app);
+  browser = await pie.connect(app, puppeteer as any);
+}
 
-  const browser = await pie.connect(app, puppeteer as any);
+initializePuppeteer()
 
-  const url = 'https://www.youtube.com';
-  
+const createWindow = () => {
   mainWindow = new BrowserWindow({
     // icon: path.join(assetsPath, 'assets', 'icon.png'),
     width: 1100,
@@ -31,19 +35,12 @@ async function createWindow () {
     }
   })
 
-  mainWindow.loadURL(url)
+  const url = MAIN_WINDOW_WEBPACK_ENTRY;
+  mainWindow.loadURL(url);
+};
 
-  
-  mainWindow.on('closed', () => {
-    mainWindow = null
-  })
-  const page = await pie.getPage(browser, mainWindow);
 
-  console.log(page.url());
-  
-}
-
-async function registerListeners () {
+async function registerListeners() {
   /**
    * This comes from bridge integration, check bridge.ts
    */
@@ -51,14 +48,30 @@ async function registerListeners () {
     console.log(message)
   })
 
-  ipcMain.on('run', () => {
-    run();
+  ipcMain.on('run', async () => {
+    const view = new BrowserView({ webPreferences: {} })
+
+    mainWindow?.setBrowserView(view)
+
+    const viewWidth = mainWindow!.getSize()[0] * 0.9;
+    const viewHeight = mainWindow!.getSize()[1] * 0.9;
+
+    const viewX = mainWindow!.getSize()[0] * 0.05;
+    const viewY = mainWindow!.getSize()[1] * 0.05;
+
+    view.setBounds({ x: viewX, y: viewY, width: viewWidth, height: viewHeight })
+    view.setAutoResize({ height: true, width: true })
+    await view.webContents.loadURL('https://facebook.com')
+
+    page = await pie.getPage(browser, view);
+    console.log(page.url());
   })
 }
 
 app.on('ready', createWindow)
   .whenReady()
   .then(registerListeners)
+  .then()
   .catch(e => console.error(e))
 
 app.on('window-all-closed', () => {

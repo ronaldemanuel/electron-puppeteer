@@ -1935,7 +1935,7 @@
     "@babel/runtime" "^7.12.5"
     "@testing-library/dom" "^7.28.1"
 
-"@timfish/webpack-asset-relocator-loader@^0.1.0":
+"@timfish/webpack-asset-relocator-loader@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@timfish/webpack-asset-relocator-loader/-/webpack-asset-relocator-loader-0.1.0.tgz#26d49e2ffdc0127489871fcb32d69ccf1be9da23"
   integrity sha512-Z0tYkI3NSngJOGULCL8Fv+npy7k0JSQ7nWcfCEA70OJKMHRbP+OBKPUJVD2qRgfnDcmZuV99SzynKrRLot0faA==

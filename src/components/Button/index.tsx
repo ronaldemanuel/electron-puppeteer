@@ -7,7 +7,5 @@ type ButtonProps = {
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
 export function Button (props: ButtonProps) {
-  return <Container type="button" {...props} onClick={() => {
-    window.Main.run();
-  }} />
+  return <Container type="button" {...props} />
 }
